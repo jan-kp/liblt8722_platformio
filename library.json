@@ -14,7 +14,7 @@
             "maintainer": true
         }
     ],
-    "license": "TODO",
+    "license": "MIT",
     "frameworks": "arduino",
-    "platforms": "*"
+    "platforms": "espressif32"
 }
