@@ -61,12 +61,12 @@ void LT8722::begin(uint8_t miso, uint8_t mosi, uint8_t sck, uint8_t cs, uint8_t 
 bool LT8722::softStart() {
     struct dataSPI dataPacket0 = resetRegisters(spi, _cs);
     struct dataSPI dataPacket1 = resetStatusRegister(spi, _cs);
-    struct dataSPI dataPacket2 = setCommandRegister(spi, _cs, ENABLE_REQ, ENABLE);
+    struct dataSPI dataPacket2 = setCommandRegister(spi, _cs, COMMAND_REG::ENABLE_REQ, ENABLE);
     struct dataSPI dataPacket3 = setOutputVoltage(spi, _cs, 2.5);
     struct dataSPI dataPacket4 = resetStatusRegister(spi, _cs);
     delay(2);
     struct dataSPI dataPacket5 = rampOutputVoltage(spi, _cs, 2.5, 1.25, 0.01, 20);
-    struct dataSPI dataPacket6 = setCommandRegister(spi, _cs, SWEN_REQ, ENABLE);
+    struct dataSPI dataPacket6 = setCommandRegister(spi, _cs, COMMAND_REG::SWEN_REQ, ENABLE);
     struct dataSPI dataPacket7 = resetStatusRegister(spi, _cs);
     delay(2);
 
@@ -109,8 +109,8 @@ bool LT8722::reset() {
 */
 /**************************************************************************/
 bool LT8722::powerOff() {
-    struct dataSPI dataPacket0 = setCommandRegister(spi, _cs, ENABLE_REQ, DISABLE);
-    struct dataSPI dataPacket1 = setCommandRegister(spi, _cs, SWEN_REQ, DISABLE);
+    struct dataSPI dataPacket0 = setCommandRegister(spi, _cs, COMMAND_REG::ENABLE_REQ, DISABLE);
+    struct dataSPI dataPacket1 = setCommandRegister(spi, _cs, COMMAND_REG::SWEN_REQ, DISABLE);
     struct dataSPI dataPacket2 = resetStatusRegister(spi, _cs);
 
     if (dataPacket0.error || dataPacket1.error || dataPacket2.error) {
@@ -174,8 +174,9 @@ uint32_t LT8722::getCommand() {
     @return Error (True) if an error accrued during the SPI communication
 */
 /**************************************************************************/
-bool LT8722::setPositiveVoltageLimit(uint8_t limit) {
-    uint8_t data[] = {0x00, 0x00, 0x00, limit};
+bool LT8722::setPositiveVoltageLimit(VOLTAGE_LIMIT limit) {
+    uint8_t limitValue = static_cast<uint8_t>(limit);
+    uint8_t data[] = {0x00, 0x00, 0x00, limitValue};
 
     struct dataSPI dataPacket = writeRegister(spi, _cs, 0x05, data);
 
@@ -190,9 +191,10 @@ bool LT8722::setPositiveVoltageLimit(uint8_t limit) {
     @return Error (True) if an error accrued during the SPI communication
 */
 /**************************************************************************/
-bool LT8722::setNegativeVoltageLimit(uint8_t limit) {
-    limit = ((uint8_t) ~limit) & 0x0F; 
-    uint8_t data[] = {0x00, 0x00, 0x00, limit};
+bool LT8722::setNegativeVoltageLimit(VOLTAGE_LIMIT limit) {
+    uint8_t limitValue = static_cast<uint8_t>(limit);
+    limitValue = ~limitValue & 0x0F; 
+    uint8_t data[] = {0x00, 0x00, 0x00, limitValue};
 
     struct dataSPI dataPacket = writeRegister(spi, _cs, 0x06, data);
 
@@ -248,8 +250,9 @@ bool LT8722::setNegativeCurrentLimit(double limit) {
     @return Error (True) if an error accrued during the SPI communication
 */
 /**************************************************************************/
-bool LT8722::setPWMFreq(uint8_t value){
-    struct dataSPI dataPacket = setCommandRegister(spi, _cs, SW_FRQ_SET, value);
+bool LT8722::setPWMFreq(PWM_MHZ value){
+    uint8_t freqValue = static_cast<uint8_t>(value);
+    struct dataSPI dataPacket = setCommandRegister(spi, _cs, COMMAND_REG::SW_FRQ_SET, freqValue);
 
     return dataPacket.error;
 }
@@ -261,8 +264,9 @@ bool LT8722::setPWMFreq(uint8_t value){
     @return Error (True) if an error accrued during the SPI communication
 */
 /**************************************************************************/
-bool LT8722::setPWMAdjust(uint8_t value){
-    struct dataSPI dataPacket = setCommandRegister(spi, _cs, SW_FRQ_ADJ, value);
+bool LT8722::setPWMAdjust(PWM_ADJ value){
+    uint8_t adjValue = static_cast<uint8_t>(value);
+    struct dataSPI dataPacket = setCommandRegister(spi, _cs, COMMAND_REG::SW_FRQ_ADJ, adjValue);
 
     return dataPacket.error;
 }
@@ -274,8 +278,9 @@ bool LT8722::setPWMAdjust(uint8_t value){
     @return Error (True) if an error accrued during the SPI communication
 */
 /**************************************************************************/  
-bool LT8722::setPWMDutyCycle(uint8_t value){
-    struct dataSPI dataPacket = setCommandRegister(spi, _cs, SYS_DC, value);
+bool LT8722::setPWMDutyCycle(PWM_DUTY value){
+    uint8_t dutyValue = static_cast<uint8_t>(value);
+    struct dataSPI dataPacket = setCommandRegister(spi, _cs, COMMAND_REG::SYS_DC, dutyValue);
 
     return dataPacket.error;
 }
@@ -287,8 +292,9 @@ bool LT8722::setPWMDutyCycle(uint8_t value){
     @return Error (True) if an error accrued during the SPI communication
 */
 /**************************************************************************/  
-bool LT8722::setLDOVoltage(uint8_t value){
-    struct dataSPI dataPacket = setCommandRegister(spi, _cs, VCC_VREG, value);
+bool LT8722::setLDOVoltage(LDO_VOLTAGE value){
+    uint8_t voltageValue = static_cast<uint8_t>(value);
+    struct dataSPI dataPacket = setCommandRegister(spi, _cs, COMMAND_REG::VCC_VREG, voltageValue);
 
     return dataPacket.error;
 }
@@ -300,8 +306,9 @@ bool LT8722::setLDOVoltage(uint8_t value){
     @return Error (True) if an error accrued during the SPI communication
 */
 /**************************************************************************/  
-bool LT8722::setPeakInductor(uint8_t value){
-    struct dataSPI dataPacket = setCommandRegister(spi, _cs, SW_VC_INT, value);
+bool LT8722::setPeakInductor(INDUCTOR_CURRENT value){
+    uint8_t currentValue = static_cast<uint8_t>(value);
+    struct dataSPI dataPacket = setCommandRegister(spi, _cs, COMMAND_REG::SW_VC_INT, currentValue);
 
     return dataPacket.error;
 }
@@ -313,8 +320,9 @@ bool LT8722::setPeakInductor(uint8_t value){
     @return Error (True) if an error accrued during the SPI communication
 */
 /**************************************************************************/
-bool LT8722::setPowerLimit(uint8_t value){
-    struct dataSPI dataPacket = setCommandRegister(spi, _cs, PWR_LIM, value);
+bool LT8722::setPowerLimit(POWER_LIMIT value){
+    uint8_t powerValue = static_cast<uint8_t>(value);
+    struct dataSPI dataPacket = setCommandRegister(spi, _cs, COMMAND_REG::PWR_LIM, powerValue);
 
     return dataPacket.error;
 }
@@ -326,7 +334,8 @@ bool LT8722::setPowerLimit(uint8_t value){
     @return value of the selected analog output
 */
 /**************************************************************************/
-double LT8722::readAnalogOutput(uint8_t value){
+double LT8722::readAnalogOutput(ANALOG_OUTPUT value){
+    uint8_t outputValue = static_cast<uint8_t>(value);
     double output = 0.0;
     double voltage = 0.0;
     double voltage1P25 = 0.0;
@@ -334,9 +343,9 @@ double LT8722::readAnalogOutput(uint8_t value){
 
     switch (value)
     {
-    case ANALOG_VOLTAGE_OUTPUT:
+    case ANALOG_OUTPUT::VOLTAGE:
         enableAnalogOutput(spi, _cs);
-        setAnalogOutput(spi, _cs, value);
+        setAnalogOutput(spi, _cs, outputValue);
         delay(10);
         voltage = analogReadMilliVolts(_analogInput);
         voltage /= 1000;
@@ -349,9 +358,9 @@ double LT8722::readAnalogOutput(uint8_t value){
 
         output = (-voltage + voltage1P25) * 16;
         break;
-    case ANALOG_CURRENT_OUTPUT:
+    case ANALOG_OUTPUT::CURRENT:
         enableAnalogOutput(spi, _cs);
-        setAnalogOutput(spi, _cs, value);
+        setAnalogOutput(spi, _cs, outputValue);
         delay(10);
         voltage = analogReadMilliVolts(_analogInput);
         voltage /= 1000;
@@ -364,9 +373,9 @@ double LT8722::readAnalogOutput(uint8_t value){
 
         output = (-voltage + voltage1P65) * 8;
         break;
-    case ANALOG_TEMPERATURE:
+    case ANALOG_OUTPUT::TEMPERATURE:
         enableAnalogOutput(spi, _cs);
-        setAnalogOutput(spi, _cs, value);
+        setAnalogOutput(spi, _cs, outputValue);
         delay(10);
         voltage = analogReadMilliVolts(_analogInput);
         voltage /= 1000;

@@ -187,8 +187,8 @@ dataSPI changeBitsInRegister(SPIClass* spi, uint8_t cs, uint8_t address, uint8_t
 */
 /**************************************************************************/
 dataSPI resetRegisters(SPIClass* spi, uint8_t cs) {
-  setCommandRegister(spi, cs, SPI_RST, ENABLE);
-  struct dataSPI dataPacket = setCommandRegister(spi, cs, SPI_RST, DISABLE);
+  setCommandRegister(spi, cs, COMMAND_REG::SPI_RST, ENABLE);
+  struct dataSPI dataPacket = setCommandRegister(spi, cs, COMMAND_REG::SPI_RST, DISABLE);
 
   return dataPacket;
 }
@@ -220,37 +220,38 @@ dataSPI resetStatusRegister(SPIClass* spi, uint8_t cs) {
     @return dataSPI structure containing status, data, crc, ack and error
 */
 /**************************************************************************/
-dataSPI setCommandRegister(SPIClass* spi, uint8_t cs, uint8_t symbol, uint8_t value) {
+dataSPI setCommandRegister(SPIClass* spi, uint8_t cs, COMMAND_REG symbol, uint8_t value) {
+  uint8_t regSymbol = static_cast<uint8_t>(symbol);
   struct dataSPI dataPacket;
 
   switch (symbol)
   {
-  case ENABLE_REQ:
-    dataPacket = changeBitsInRegister(spi, cs, 0x00, symbol, 1, value); 
+  case COMMAND_REG::ENABLE_REQ:
+    dataPacket = changeBitsInRegister(spi, cs, 0x00, regSymbol, 1, value); 
     break;
-  case SWEN_REQ:
-    dataPacket = changeBitsInRegister(spi, cs, 0x00, symbol, 1, value); 
+  case COMMAND_REG::SWEN_REQ:
+    dataPacket = changeBitsInRegister(spi, cs, 0x00, regSymbol, 1, value); 
     break;
-  case SW_FRQ_SET:
-    dataPacket = changeBitsInRegister(spi, cs, 0x00, symbol, 3, value); 
+  case COMMAND_REG::SW_FRQ_SET:
+    dataPacket = changeBitsInRegister(spi, cs, 0x00, regSymbol, 3, value); 
     break;
-  case SW_FRQ_ADJ:
-    dataPacket = changeBitsInRegister(spi, cs, 0x00, symbol, 2, value); 
+  case COMMAND_REG::SW_FRQ_ADJ:
+    dataPacket = changeBitsInRegister(spi, cs, 0x00, regSymbol, 2, value); 
     break;
-  case SYS_DC:
-    dataPacket = changeBitsInRegister(spi, cs, 0x00, symbol, 2, value); 
+  case COMMAND_REG::SYS_DC:
+    dataPacket = changeBitsInRegister(spi, cs, 0x00, regSymbol, 2, value); 
     break;
-  case VCC_VREG:
-    dataPacket = changeBitsInRegister(spi, cs, 0x00, symbol, 1, value); 
+  case COMMAND_REG::VCC_VREG:
+    dataPacket = changeBitsInRegister(spi, cs, 0x00, regSymbol, 1, value); 
     break;
-  case SW_VC_INT:
-    dataPacket = changeBitsInRegister(spi, cs, 0x00, symbol, 3, value); 
+  case COMMAND_REG::SW_VC_INT:
+    dataPacket = changeBitsInRegister(spi, cs, 0x00, regSymbol, 3, value); 
     break;
-  case SPI_RST:
-    dataPacket = changeBitsInRegister(spi, cs, 0x00, symbol, 1, value); 
+  case COMMAND_REG::SPI_RST:
+    dataPacket = changeBitsInRegister(spi, cs, 0x00, regSymbol, 1, value); 
     break;
-  case PWR_LIM:
-    dataPacket = changeBitsInRegister(spi, cs, 0x00, symbol, 4, value); 
+  case COMMAND_REG::PWR_LIM:
+    dataPacket = changeBitsInRegister(spi, cs, 0x00, regSymbol, 4, value); 
     break;
   default:
     dataPacket.error = 1;

@@ -16,18 +16,20 @@
 #include <Arduino.h>
 #include <SPI.h>
 
-#define ENABLE_REQ 0
-#define SWEN_REQ 1
-#define SW_FRQ_SET 2
-#define SW_FRQ_ADJ 5
-#define SYS_DC 7
-#define VCC_VREG 9
-#define SW_VC_INT 11
-#define SPI_RST 14
-#define PWR_LIM 15
+enum class COMMAND_REG : uint8_t{
+    ENABLE_REQ = 0,
+    SWEN_REQ   = 1,
+    SW_FRQ_SET = 2,
+    SW_FRQ_ADJ = 5,
+    SYS_DC     = 7,
+    VCC_VREG   = 9,
+    SW_VC_INT  = 11,
+    SPI_RST    = 14,
+    PWR_LIM    = 15,
+};
 
-#define DISABLE 0x0
-#define ENABLE 0x1
+#define DISABLE 0x00
+#define ENABLE  0x01
 
 struct dataSPI {
     uint8_t status[2];
@@ -48,7 +50,7 @@ dataSPI resetRegisters(SPIClass* spi, uint8_t cs);
 dataSPI resetStatusRegister(SPIClass* spi, uint8_t cs);
 
 //functions to change specific register values
-dataSPI setCommandRegister(SPIClass* spi, uint8_t cs, uint8_t symbol, uint8_t value);
+dataSPI setCommandRegister(SPIClass* spi, uint8_t cs, COMMAND_REG symbol, uint8_t value);
 dataSPI setOutputVoltage(SPIClass* spi, uint8_t cs, double voltage);
 dataSPI rampOutputVoltage(SPIClass* spi, uint8_t cs, double start, double end, double stepSize, uint8_t duration);
 
