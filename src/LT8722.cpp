@@ -38,9 +38,6 @@ LT8722::LT8722(uint8_t spi_bus) {
 /**************************************************************************/
 void LT8722::begin(uint8_t miso, uint8_t mosi, uint8_t sck, uint8_t cs, uint8_t analogInput) {
     spi->begin(sck, miso, mosi, cs);
-    spi->setClockDivider(SPI_CLOCK_DIV4);  // set SPI clock to 4 MHz
-    spi->setDataMode(SPI_MODE0);           // SPI mode 0
-    spi->setBitOrder(MSBFIRST);            // transmit MSB first
 
     pinMode(cs, OUTPUT);
     digitalWrite(cs, HIGH);

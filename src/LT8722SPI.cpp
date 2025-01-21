@@ -28,12 +28,14 @@ dataSPI readStatus(SPIClass* spi, uint8_t cs){
   uint8_t address = (0x01 << 1) & 0xFE;
   uint8_t sendingPacket[] = {command, address};
 
+  spi->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
   digitalWrite(cs, LOW);
   dataPacket.status[0] = spi->transfer((int8_t)sendingPacket[0]);
   dataPacket.status[1] = spi->transfer((int8_t)sendingPacket[1]);
   dataPacket.crc = spi->transfer((int8_t)getCRC2(sendingPacket));
   dataPacket.ack = spi->transfer((int8_t)0x00);
   digitalWrite(cs, HIGH);
+  spi->endTransaction();
 
   for (uint8_t i = 0; i < 4; i++)
   {
@@ -69,6 +71,7 @@ dataSPI readRegister(SPIClass* spi, uint8_t cs, uint8_t address) {
   address = (address << 1) & 0xFE;
   uint8_t sendingPacket[] = {command, address};
 
+  spi->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
   digitalWrite(cs, LOW);
   dataPacket.status[0] = spi->transfer((int8_t)sendingPacket[0]);
   dataPacket.status[1] = spi->transfer((int8_t)sendingPacket[1]);
@@ -79,6 +82,7 @@ dataSPI readRegister(SPIClass* spi, uint8_t cs, uint8_t address) {
   dataPacket.crc = spi->transfer((int8_t)0x00);
   dataPacket.ack = spi->transfer((int8_t)0x00);
   digitalWrite(cs, HIGH);
+  spi->endTransaction();
 
   if (dataPacket.ack == 0xA5) {
     if (checkCRC(dataPacket.status, dataPacket.data, 6, dataPacket.crc)) {
@@ -110,6 +114,7 @@ dataSPI writeRegister(SPIClass* spi, uint8_t cs, uint8_t address, uint8_t *data)
   address = (address << 1) & 0xFE;
   uint8_t sendingPacket[] = {command, address};
 
+  spi->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
   digitalWrite(cs, LOW);
   dataPacket.status[0] = spi->transfer((int8_t)sendingPacket[0]);
   dataPacket.status[1] = spi->transfer((int8_t)sendingPacket[1]);
@@ -120,6 +125,7 @@ dataSPI writeRegister(SPIClass* spi, uint8_t cs, uint8_t address, uint8_t *data)
   dataPacket.data[3] = spi->transfer(getCRC6(sendingPacket, data));
   dataPacket.ack = spi->transfer((int8_t)0x00);
   digitalWrite(cs, HIGH);
+  spi->endTransaction();
 
   if (dataPacket.ack == 0xA5) {
     if (checkCRC(dataPacket.status, dataPacket.data, 2, dataPacket.crc)) {

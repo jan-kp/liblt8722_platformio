@@ -88,7 +88,7 @@ enum class ANALOG_OUTPUT : uint8_t{
 class LT8722 {
 public:
     //constructor and begin function
-    LT8722(uint8_t sspi_bus = FSPI);
+    LT8722(uint8_t spi_bus = FSPI);
     void begin(uint8_t miso = 13, uint8_t mosi = 11, uint8_t sck = 12, uint8_t cs = 10, uint8_t analogInput = 8);
 
     //important control functions

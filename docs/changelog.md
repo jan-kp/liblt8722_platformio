@@ -1,6 +1,9 @@
 # ChangeLog for LT8722
 
-## [2.0.0] - 2025-01-17
+## [2.1.0] - 2025-01-21
+### added functionality for working with multiple SPI devices
+
+## [2.0.0] - 2025-01-19
 ### change from define to enum class for predefined values of certain functions
 
 ## [1.1.0] - 2025-01-17
