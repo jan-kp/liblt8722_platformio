@@ -88,34 +88,183 @@ enum class ANALOG_OUTPUT : uint8_t{
 class LT8722 {
 public:
     //constructor and begin function
+
+    /**************************************************************************/
+    /*!
+        @brief Create the LT8722 object and specify the SPI type (usually FSPI)
+        @param spi_bus the SPI type to use
+    */
+    /**************************************************************************/
     LT8722(uint8_t spi_bus = FSPI);
+
+    /**************************************************************************/
+    /*!
+        @brief Initialize the SPI interface
+        @param miso the SPI MISO pin to use
+        @param mosi the SPI MOSI pin to use
+        @param sck the SPI clock pin to use
+        @param cs the SPI CS pin to use
+    */
+    /**************************************************************************/
     void begin(uint8_t miso = 13, uint8_t mosi = 11, uint8_t sck = 12, uint8_t cs = 10, uint8_t analogInput = 8);
 
     //important control functions
+
+    /**************************************************************************/
+    /*!
+        @brief Softstart of the LT8722 to prevent large inrush currents
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/
     bool softStart();
+
+    /**************************************************************************/
+    /*!
+        @brief Reset all register
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/
     bool reset();
+
+    /**************************************************************************/
+    /*!
+        @brief Disable the enable request and switch enable request bit to turn 
+            off the output and reset the status register 
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/
     bool powerOff();
+
+    /**************************************************************************/
+    /*!
+        @brief Set the output VOltage
+        @param voltage Desired output Voltage
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/
     bool setVoltage(double voltage);
 
     //functions for validating the correct functionality
+
+    /**************************************************************************/
+    /*!
+        @brief Return the data of the status register, bit [10-0]
+        @return Data of the status register
+    */
+    /**************************************************************************/
     uint16_t getStatus();
+
+    /**************************************************************************/
+    /*!
+        @brief Return the data of the command register, bit [18-0]
+        @return Data of the command register
+    */
+    /**************************************************************************/
     uint32_t getCommand();
 
     //functions for voltage and current limits
+
+    /**************************************************************************/
+    /*!
+        @brief Define the maximum positive voltage limit
+        @param limit Predefined positive voltage limit
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/
     bool setPositiveVoltageLimit(VOLTAGE_LIMIT limit);
+
+    /**************************************************************************/
+    /*!
+        @brief Define the maximum negative voltage limit
+        @param limit Predefined negative voltage limit
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/
     bool setNegativeVoltageLimit(VOLTAGE_LIMIT limit);
+
+    /**************************************************************************/
+    /*!
+        @brief Define the maximum positive current limit
+        @param limit Positive current limit
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/
     bool setPositiveCurrentLimit(double limit);
+
+    /**************************************************************************/
+    /*!
+        @brief Define the maximum negative current limit
+        @param limit Negative voltage limit
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/
     bool setNegativeCurrentLimit(double limit);
 
     //additional control functions
+
+    /**************************************************************************/
+    /*!
+        @brief Set the PWM switch frequency
+        @param value Predefined PWM switch frequency
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/
     bool setPWMFreq(PWM_MHZ value);
+
+    /**************************************************************************/
+    /*!
+        @brief Set the PWM switch frequency adjustment
+        @param value Predefined PWM switch frequency adjustment
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/
     bool setPWMAdjust(PWM_ADJ value);
+
+    /**************************************************************************/
+    /*!
+        @brief Set the PWM duty cycle
+        @param value Predefined PWM duty cycle
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/  
     bool setPWMDutyCycle(PWM_DUTY value);
+
+    /**************************************************************************/
+    /*!
+        @brief Set the VCC LDO regulation (3.4V / 3.1V)
+        @param value Predefined VCC LDO regulation
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/  
     bool setLDOVoltage(LDO_VOLTAGE value);
+
+    /**************************************************************************/
+    /*!
+        @brief Set the typical peak inductor current after BST–SW refresh period
+        @param value Predefined peak inductor current
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/  
     bool setPeakInductor(INDUCTOR_CURRENT value);
+
+    /**************************************************************************/
+    /*!
+        @brief Set the linear power stage MOSFET power limit
+        @param value Predefined MOSFET power limit
+        @return Error (True) if an error accrued during the SPI communication
+    */
+    /**************************************************************************/
     bool setPowerLimit(POWER_LIMIT value);
 
     //read analog output
+
+    /**************************************************************************/
+    /*!
+        @brief Read the selected value of the analog output pin
+        @param value Predefined value to be read
+        @return value of the selected analog output
+    */
+    /**************************************************************************/
     double readAnalogOutput(ANALOG_OUTPUT value);
 
 private:

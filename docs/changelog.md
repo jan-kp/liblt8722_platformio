@@ -1,5 +1,8 @@
 # ChangeLog for LT8722
 
+## [2.1.1] - 2025-01-28
+### improved documentation and comments
+
 ## [2.1.0] - 2025-01-21
 ### added functionality for working with multiple SPI devices
 

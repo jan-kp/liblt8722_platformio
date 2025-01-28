@@ -56,6 +56,8 @@ void LT8722::begin(uint8_t miso, uint8_t mosi, uint8_t sck, uint8_t cs, uint8_t 
 */
 /**************************************************************************/
 bool LT8722::softStart() {
+
+    //softstart procedure 
     struct dataSPI dataPacket0 = resetRegisters(spi, _cs);
     struct dataSPI dataPacket1 = resetStatusRegister(spi, _cs);
     struct dataSPI dataPacket2 = setCommandRegister(spi, _cs, COMMAND_REG::ENABLE_REQ, ENABLE);
@@ -67,6 +69,7 @@ bool LT8722::softStart() {
     struct dataSPI dataPacket7 = resetStatusRegister(spi, _cs);
     delay(2);
 
+    //check for communication errors
     if (dataPacket0.error ||
         dataPacket1.error ||
         dataPacket2.error ||
@@ -91,6 +94,7 @@ bool LT8722::reset() {
     struct dataSPI dataPacket0 = resetRegisters(spi, _cs);
     struct dataSPI dataPacket1 = resetStatusRegister(spi, _cs);
 
+    //check for communication errors
     if (dataPacket0.error || dataPacket1.error) {
         return true;
     } else {
@@ -110,6 +114,7 @@ bool LT8722::powerOff() {
     struct dataSPI dataPacket1 = setCommandRegister(spi, _cs, COMMAND_REG::SWEN_REQ, DISABLE);
     struct dataSPI dataPacket2 = resetStatusRegister(spi, _cs);
 
+    //check for communication errors
     if (dataPacket0.error || dataPacket1.error || dataPacket2.error) {
         return true;
     } else {
@@ -125,10 +130,11 @@ bool LT8722::powerOff() {
 */
 /**************************************************************************/
 bool LT8722::setVoltage(double voltage) {
-    double voltageDAC = (voltage / -16) + 1.25;
+    double voltageDAC = (voltage / -16) + 1.25; //convert the voltage to fit the specifications of the L8722
 
     struct dataSPI dataPacket = setOutputVoltage(spi, _cs, voltageDAC);
 
+    //check for communication errors
     return dataPacket.error;
 }
 
@@ -143,7 +149,7 @@ uint16_t LT8722::getStatus() {
 
     struct dataSPI dataPacket = readStatus(spi, _cs);
 
-    status = (static_cast<uint16_t>(dataPacket.status[0]) << 8) | dataPacket.status[1];
+    status = (static_cast<uint16_t>(dataPacket.status[0]) << 8) | dataPacket.status[1]; //convert status byte array to uint16_t 
 
     return status;
 }
@@ -159,7 +165,7 @@ uint32_t LT8722::getCommand() {
 
     struct dataSPI dataPacket = readRegister(spi, _cs, 0x00);
 
-    data = (static_cast<uint32_t>(dataPacket.data[0]) << 24) | (static_cast<uint32_t>(dataPacket.data[1]) << 16) | (static_cast<uint16_t>(dataPacket.data[2]) << 8) | dataPacket.data[3];
+    data = (static_cast<uint32_t>(dataPacket.data[0]) << 24) | (static_cast<uint32_t>(dataPacket.data[1]) << 16) | (static_cast<uint16_t>(dataPacket.data[2]) << 8) | dataPacket.data[3]; //convert data byte array to uint32_t 
 
     return data;
 }
@@ -177,6 +183,7 @@ bool LT8722::setPositiveVoltageLimit(VOLTAGE_LIMIT limit) {
 
     struct dataSPI dataPacket = writeRegister(spi, _cs, 0x05, data);
 
+    //check for communication errors
     return dataPacket.error;
 }
 
@@ -190,11 +197,12 @@ bool LT8722::setPositiveVoltageLimit(VOLTAGE_LIMIT limit) {
 /**************************************************************************/
 bool LT8722::setNegativeVoltageLimit(VOLTAGE_LIMIT limit) {
     uint8_t limitValue = static_cast<uint8_t>(limit);
-    limitValue = ~limitValue & 0x0F; 
+    limitValue = ~limitValue & 0x0F;                    //convert to negative limit
     uint8_t data[] = {0x00, 0x00, 0x00, limitValue};
 
     struct dataSPI dataPacket = writeRegister(spi, _cs, 0x06, data);
 
+    //check for communication errors
     return dataPacket.error;
 }
 
@@ -207,7 +215,7 @@ bool LT8722::setNegativeVoltageLimit(VOLTAGE_LIMIT limit) {
 /**************************************************************************/
 bool LT8722::setPositiveCurrentLimit(double limit) {
     uint8_t data[4];
-    uint16_t currentLimit = -((limit - 6.8) / 0.01328);
+    uint16_t currentLimit = -((limit - 6.8) / 0.01328); //convert the current limit to fit the specifications of the L8722
     
     data[0] = 0x00;
     data[1] = 0x00;
@@ -216,6 +224,7 @@ bool LT8722::setPositiveCurrentLimit(double limit) {
 
     struct dataSPI dataPacket = writeRegister(spi, _cs, 0x03, data);
 
+    //check for communication errors
     return dataPacket.error;
 }
 
@@ -228,7 +237,7 @@ bool LT8722::setPositiveCurrentLimit(double limit) {
 /**************************************************************************/
 bool LT8722::setNegativeCurrentLimit(double limit) {
     uint8_t data[4];
-    uint16_t currentLimit = -(-limit / 0.01328);
+    uint16_t currentLimit = -(-limit / 0.01328); //convert the current limit to fit the specifications of the L8722
     
     data[0] = 0x00;
     data[1] = 0x00;
@@ -237,6 +246,7 @@ bool LT8722::setNegativeCurrentLimit(double limit) {
 
     struct dataSPI dataPacket = writeRegister(spi, _cs, 0x02, data);
 
+    //check for communication errors
     return dataPacket.error;
 }
 
@@ -338,6 +348,7 @@ double LT8722::readAnalogOutput(ANALOG_OUTPUT value){
     double voltage1P25 = 0.0;
     double voltage1P65 = 0.0;
 
+    //read and convert voltage according to the requested value
     switch (value)
     {
     case ANALOG_OUTPUT::VOLTAGE:

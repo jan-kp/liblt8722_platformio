@@ -14,9 +14,47 @@
 #include <Arduino.h>
 
 //functions to calculate CRC
+
+/**************************************************************************/
+/*!
+    @brief Calculate the CRC for two bytes
+    @param data Data for the CRC calculation
+    @return CRC value
+*/
+/**************************************************************************/
 uint8_t getCRC2(uint8_t *data);
+
+/**************************************************************************/
+/*!
+    @brief Calculate the CRC for six bytes
+    @param data1 First two bytes for the CRC calculation
+    @param data2 Remaining bytes for the CRC calculation
+    @return CRC value
+*/
+/**************************************************************************/
 uint8_t getCRC6(uint8_t *data1, uint8_t *data2);
+
+/**************************************************************************/
+/*!
+    @brief Check the correctness of theCRC of the received data
+    @param stats Received status bytes
+    @param data Received data bytes
+    @param length Length of the data to be considered
+    @param crc Received CRC value
+    @return Result of the CRC check => False = CRC is correct; True = CRC is
+            not correct
+*/
+/**************************************************************************/
 bool checkCRC(uint8_t *status, uint8_t *data, uint8_t length, uint8_t crc);
+
+/**************************************************************************/
+/*!
+    @brief Combine two array with the length of two and six
+    @param array1 First array (intended for status array)
+    @param array2 Second array (intended for data array)
+    @param array Output array as pointer
+*/
+/**************************************************************************/
 void combineArray(uint8_t *status, uint8_t *data, uint8_t *array);
 
 //precalculated lookup table for the CRC calculation

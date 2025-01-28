@@ -24,8 +24,8 @@
 dataSPI readStatus(SPIClass* spi, uint8_t cs){
   struct dataSPI dataPacket;
 
-  uint8_t command = 0xF0;
-  uint8_t address = (0x01 << 1) & 0xFE;
+  uint8_t command = 0xF0;                       //status acquisition command
+  uint8_t address = (0x01 << 1) & 0xFE;         //SPI_STATUS address A[7:1] 
   uint8_t sendingPacket[] = {command, address};
 
   spi->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
@@ -37,11 +37,13 @@ dataSPI readStatus(SPIClass* spi, uint8_t cs){
   digitalWrite(cs, HIGH);
   spi->endTransaction();
 
+  //fill dataPacket struct with empty data bytes 
   for (uint8_t i = 0; i < 4; i++)
   {
     dataPacket.data[i] = (int8_t)0x00;
   }
   
+  //check for crc errors
   if (dataPacket.ack == 0xA5) {
     if (checkCRC(dataPacket.status, dataPacket.data, 2, dataPacket.crc)) {
       dataPacket.error = false;
@@ -67,8 +69,8 @@ dataSPI readStatus(SPIClass* spi, uint8_t cs){
 dataSPI readRegister(SPIClass* spi, uint8_t cs, uint8_t address) {
   struct dataSPI dataPacket;
 
-  uint8_t command = 0xF4;
-  address = (address << 1) & 0xFE;
+  uint8_t command = 0xF4;                       //data read command
+  address = (address << 1) & 0xFE;              //register address A[7:1] 
   uint8_t sendingPacket[] = {command, address};
 
   spi->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
@@ -84,6 +86,7 @@ dataSPI readRegister(SPIClass* spi, uint8_t cs, uint8_t address) {
   digitalWrite(cs, HIGH);
   spi->endTransaction();
 
+  //check for crc errors
   if (dataPacket.ack == 0xA5) {
     if (checkCRC(dataPacket.status, dataPacket.data, 6, dataPacket.crc)) {
       dataPacket.error = false;
@@ -110,8 +113,8 @@ dataSPI readRegister(SPIClass* spi, uint8_t cs, uint8_t address) {
 dataSPI writeRegister(SPIClass* spi, uint8_t cs, uint8_t address, uint8_t *data) {
   struct dataSPI dataPacket;
 
-  uint8_t command = 0xF2;
-  address = (address << 1) & 0xFE;
+  uint8_t command = 0xF2;                       //data write command
+  address = (address << 1) & 0xFE;              //register address A[7:1] 
   uint8_t sendingPacket[] = {command, address};
 
   spi->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
@@ -127,6 +130,7 @@ dataSPI writeRegister(SPIClass* spi, uint8_t cs, uint8_t address, uint8_t *data)
   digitalWrite(cs, HIGH);
   spi->endTransaction();
 
+  //check for crc errors
   if (dataPacket.ack == 0xA5) {
     if (checkCRC(dataPacket.status, dataPacket.data, 2, dataPacket.crc)) {
       dataPacket.error = false;
@@ -156,6 +160,7 @@ dataSPI writeRegister(SPIClass* spi, uint8_t cs, uint8_t address, uint8_t *data)
 dataSPI changeBitsInRegister(SPIClass* spi, uint8_t cs, uint8_t address, uint8_t startBit, uint8_t numBits, uint8_t value) {
   struct dataSPI dataPacket1 = readRegister(spi, cs, address);
 
+  //change bits in dataPacket1 according to startBit, numBit and value
   for (uint8_t i = 0; i < numBits; i++) {
     uint8_t bitPosition = startBit + i;
     int byteIndex = 3 - (bitPosition / 8);
@@ -171,6 +176,7 @@ dataSPI changeBitsInRegister(SPIClass* spi, uint8_t cs, uint8_t address, uint8_t
 
   struct dataSPI dataPacket2 = writeRegister(spi, cs, address, dataPacket1.data);
 
+  //check for crc errors
   if (dataPacket1.ack == 0xA5 && dataPacket2.ack == 0xA5) {
     if (!(dataPacket1.error || dataPacket2.error)) {
       dataPacket1.error = false;
@@ -193,8 +199,8 @@ dataSPI changeBitsInRegister(SPIClass* spi, uint8_t cs, uint8_t address, uint8_t
 */
 /**************************************************************************/
 dataSPI resetRegisters(SPIClass* spi, uint8_t cs) {
-  setCommandRegister(spi, cs, COMMAND_REG::SPI_RST, ENABLE);
-  struct dataSPI dataPacket = setCommandRegister(spi, cs, COMMAND_REG::SPI_RST, DISABLE);
+  setCommandRegister(spi, cs, COMMAND_REG::SPI_RST, ENABLE);                              //set SPI_RST bit in command register to 1
+  struct dataSPI dataPacket = setCommandRegister(spi, cs, COMMAND_REG::SPI_RST, DISABLE); //set SPI_RST bit in command register to 0
 
   return dataPacket;
 }
@@ -211,7 +217,7 @@ dataSPI resetRegisters(SPIClass* spi, uint8_t cs) {
 dataSPI resetStatusRegister(SPIClass* spi, uint8_t cs) {
   uint8_t data[] = {0x00, 0x00, 0x00, 0x00};
 
-  struct dataSPI dataPacket = writeRegister(spi, cs, 0x1, data);
+  struct dataSPI dataPacket = writeRegister(spi, cs, 0x1, data);  //set all bits of status register to 0
 
   return dataPacket;
 }
@@ -230,6 +236,7 @@ dataSPI setCommandRegister(SPIClass* spi, uint8_t cs, COMMAND_REG symbol, uint8_
   uint8_t regSymbol = static_cast<uint8_t>(symbol);
   struct dataSPI dataPacket;
 
+  //change command register according to symbol and value
   switch (symbol)
   {
   case COMMAND_REG::ENABLE_REQ:
@@ -280,12 +287,14 @@ dataSPI setOutputVoltage(SPIClass* spi, uint8_t cs, double voltage) {
   uint32_t registerValue = 0;
   uint8_t data[4];
 
+  //calculate needed register value to set the correct output voltage limit
   if (voltage >= 1.25) {
     registerValue = 4294967296 - ((voltage - 1.25) / (2.5 * pow(2, -25)));
   } else {
     registerValue = (voltage - 1.25) / -(2.5 * pow(2, -25));
   }
 
+  //fill data array bit by bit with the new register value to set the output voltage
   for (uint8_t i = 0; i < 4; i++) {
     data[3 - i] = registerValue >> (i * 8);
   }
@@ -313,6 +322,7 @@ dataSPI rampOutputVoltage(SPIClass* spi, uint8_t cs, double start, double end, d
   double steps = fabs((end - start) / stepSize);
   double delayTime = duration / steps; 
  
+  //calculate the needed output voltage according to start, end, stepSize and duration
   for (uint32_t i = 0; i <= (steps - 1); i++) {
     if (start >= end) {
       currentValue -= stepSize;
@@ -335,7 +345,7 @@ dataSPI rampOutputVoltage(SPIClass* spi, uint8_t cs, double start, double end, d
 */
 /**************************************************************************/
 dataSPI enableAnalogOutput(SPIClass* spi, uint8_t cs){
-    struct dataSPI dataPacket = changeBitsInRegister(spi, cs, 0x07, 6, 1, 0x01);
+    struct dataSPI dataPacket = changeBitsInRegister(spi, cs, 0x07, 6, 1, 0x01); //set AOUT_EN bit of SPIS_AMUX register to one
 
     return dataPacket;
 }
@@ -349,7 +359,7 @@ dataSPI enableAnalogOutput(SPIClass* spi, uint8_t cs){
 */
 /**************************************************************************/
 dataSPI disableAnalogOutput(SPIClass* spi, uint8_t cs){
-    struct dataSPI dataPacket = changeBitsInRegister(spi, cs, 0x07, 6, 1, 0x00);
+    struct dataSPI dataPacket = changeBitsInRegister(spi, cs, 0x07, 6, 1, 0x00); //set AOUT_EN bit of SPIS_AMUX register to zero
 
     return dataPacket;
 }
@@ -364,7 +374,7 @@ dataSPI disableAnalogOutput(SPIClass* spi, uint8_t cs){
 */
 /**************************************************************************/
 dataSPI setAnalogOutput(SPIClass* spi, uint8_t cs, uint8_t value){
-    struct dataSPI dataPacket = changeBitsInRegister(spi, cs, 0x07, 0, 4, value);
+    struct dataSPI dataPacket = changeBitsInRegister(spi, cs, 0x07, 0, 4, value); //set AMUX[3:0] bits of SPIS_AMUX register to desired value
 
     return dataPacket;
 }
