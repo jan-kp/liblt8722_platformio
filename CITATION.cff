@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+title: LT8722 Library for PlatformIO
+version: 2.1.1
+message: 'If you use this software, please cite it as below.'
+type: software
+authors:
+  - given-names: Jan
+    family-names: kleine Piening
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.15052631
+repository-code: 'https://github.com/jan-kp/liblt8722_platformio'
+date-released: 2025-03-19
